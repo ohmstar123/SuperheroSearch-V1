@@ -9,13 +9,33 @@
 </head>
 <body>
 <!-- Place your content here -->
-<h1>SE 3316 Lab 3</h1>
-<h2>Superhero Information</h2>
-<p>Hello World!</p>
-<input type="text" placeholder="Enter ID number">
-<button type="button" onclick="searchByID()">Search by ID</button>
+<div>
+    <h1>SE 3316 Lab 3</h1>
+    <h2>Superhero Information</h2>
+    <p>Hello World!</p>
+    <input type="text" placeholder="Enter ID number">
+   
+</div>
+
+<div class="intro">
+    <h2>
+        Our Inventory 
+        <button id="get-inventory">Reload</button>
+    </h2>
+    <ol id="inventory"></ol>
+</div>
+<div class="admin">
+    <h2>Manage Inventory</h2>
+    <span>
+        Name: <input type="text" id="name">
+        Colour: <input type="text" id="colour">
+        Stock: <input type="text" id="stock">
+        <button id="addItem">Add</button>
+    </span>
+    <span id="status"></span>
+</div>
 
 <!-- Embedded JavaScript go here -->
-<script src="script.js"></script>
+<script defer src="script.js"></script>
 </body>
 </html>

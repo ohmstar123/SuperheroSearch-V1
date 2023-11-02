@@ -1,0 +1,26 @@
+.intro{
+    margin: 5px;
+    padding: 5px;
+    border: 2px solid purple;
+    border-radius: 10px;
+    background-color:rgb(235, 233, 127);
+}
+
+.intro button{
+    border-radius: 10px;
+    border: 2px solid crimson;
+    background-color: aquamarine;
+    transition-duration: 0.4s;
+}
+
+.intro button:hover{
+    background-color: wheat;
+}
+
+.admin{
+    background-color: paleturquoise;
+    border-radius: 10px;
+    border: 2px solid purple;
+    padding: 5px;
+    margin: 5px;
+}
