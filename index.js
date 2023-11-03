@@ -1,11 +1,70 @@
-// import superheroInfo from './jsonFiles/superhero_info.json'
-// import superheroPowers from './jsonFiles/superhero_powers.json'
-
 const express = require('express')
 const app = express()
 const port = 3000
-const router = express.Router()
+//const router = express.Router()
+const infoRouter = express.Router()
+const fs = require('fs')
+const path = require('path')
 
+// Read superhero_info json file
+const superheroData = JSON.parse(fs.readFileSync("jsonFiles/superhero_info.json", 'utf-8'))
+const superheroPowers = JSON.parse(fs.readFileSync("jsonFiles/superhero_powers.json", 'utf-8'))
+
+// Setup serving front-end code
+app.use('/', express.static('client'))
+
+// Setup middleware to do login
+app.use((req, res, next) => { // For all routes
+    console.log(`${req.method} request for ${req.url}`)
+    next() // Keep going
+})
+
+// Parse data in body as JSON
+infoRouter.use(express.json())
+
+infoRouter.route('/') // Chain all the routes to the base prefix (/api/superheroes)
+    // Get info on all the superheroes
+    .get((req, res) => {
+        res.send(superheroData)
+    })
+
+
+infoRouter.route('/:id') 
+    // Get info on a superhero based on their 
+    .get((req, res) => {
+        const superhero = superheroData.find(h => h.id === parseInt(req.params.id))
+        if (superhero){
+            res.send(superhero)
+        }
+        else{
+            res.status(404).send(`Superhero with ID: ${req.params.id} was not found!`)
+        }
+    })
+
+
+infoRouter.route('/:id/powers')
+
+    .get((req, res) => {
+        const superhero = superheroData.find(h => h.id === parseInt(req.params.id))
+        const superheroPower = superheroPowers.find(h => h.hero_names === superhero.name)
+
+        if (superheroPower){
+            res.send(superheroPower)
+        }
+        else{
+            res.status(404).send(`Superhero powers with ID: ${req.params.id} was not found!`)
+        }
+    })
+
+// Determine the base prefix for the router
+app.use('/api/superheroes', infoRouter)
+
+// Confirms the local server is running
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`)
+})
+//-------------------------------------------------------------------------------------------------------------------------------------------
+/*
 const parts = [
     {id: 100, name: 'Belt', colour: 'brown', stock: 0}, 
     {id: 101, name: 'Clip', colour: 'brown', stock: 0}, 
@@ -106,3 +165,4 @@ app.use('/api/parts', router)
 app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })
+*/
