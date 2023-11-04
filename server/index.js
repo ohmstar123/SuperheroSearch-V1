@@ -15,7 +15,7 @@ db.once('open', () => console.log('Connected to Mongo Database'))
 const superheroInfoSchema = new mongoose.Schema({
     "id":Number,
     "name":String,
-    "gender":String,
+    "Gender":String,
     "Eye color":String,
     "Race":String,
     "Hair color":String,
@@ -252,12 +252,65 @@ infoRouter.route('/') // Chain all the routes to the base prefix (/api/superhero
 
 infoRouter.route('/publishers')
     // Get all the publishers
-    .get((req, res) => {
-        const publishers = superheroData.map((superhero) => superhero.Publisher) // All publishers
-        const filteredPublishers = publishers.filter((value, index) => publishers.indexOf(value) === index) // Remove any duplicates
-        res.send(filteredPublishers)
+    .get(async (req, res) => {
+        //const publishers = superheroData.map((superhero) => superhero.Publisher) // All publishers
+        //const filteredPublishers = publishers.filter((value, index) => publishers.indexOf(value) === index) // Remove any duplicates
+        try{
+            const allSuperheroes = await superheroInfo.find({}).select('-_id -__v')
+            allPublishers = [] 
+            for(let i = 0; i < allSuperheroes.length; i++){
+                allPublishers.push(allSuperheroes[i].Publisher)
+                console.log(allPublishers[i])
+            }
+
+            const uniquePublishers = [...new Set(allPublishers)]
+            const filteredPublishers = uniquePublishers.filter((item) => item !== '')
+            //console.log(allSuperheroes)
+            // if (superhero){
+            //     res.send(superhero)
+            // }
+            // else{
+            //     res.status(404).send(`Superhero with ID: ${req.params.id} was not found!`)
+            // }
+            res.send(filteredPublishers)
+        }
+        catch (error){
+            console.error(error);
+            res.status(500).send('Internal Server Error');
+        }
+        //const publishers = 
+        //res.send(filteredPublishers)
     })
 
+infoRouter.route('/pattern/:filter/:pattern/:n')
+    // Get the search results for the specific pattern
+    .get(async (req, res) => {
+        try{
+            filterValue = req.params.filter
+            patternValue = req.params.pattern
+            nValue = req.params.n
+            let projection = {
+                _id: 0, // Exclude _id field
+                __v: 0 // Exclude v field
+            };
+            const searchCondition = await superheroInfo.aggregate([{$match: {[filterValue]: patternValue}}, {$limit: parseInt(nValue)}, {$project: projection}])
+            
+            if (searchCondition.length !== 0){
+                res.send(searchCondition)
+            }
+            else if (filterValue === 'Height' || filterValue === 'Weight'){
+                const searchCondition = await superheroInfo.aggregate([{$match: {[filterValue]: parseInt(patternValue)}}, {$limit: parseInt(nValue)}, {$project: projection}])
+                res.send(searchCondition)
+            }
+            else{
+                res.status(404).send(`Superhero with ID: ${filterValue} was not found!`)
+            }
+        }
+        catch (error){
+            console.error(error);
+            res.status(500).send('Internal Server Error');
+        }
+    })
 
 infoRouter.route('/:id') 
     // Get info on a superhero based on their ID
@@ -282,26 +335,23 @@ infoRouter.route('/:id')
 infoRouter.route('/:id/powers')
     // Get the powers of the superhero based on their ID
     .get(async (req, res) => {
-        //const superhero = superheroData.find(h => h.id === parseInt(req.params.id))
-        //const superheroPower = superheroPowers.find(h => h.hero_names === superhero.name)
         try{
             const idValue = req.params.id
             const superhero = await superheroInfo.findOne({id: idValue}).select('-_id -__v')
             const superheroPower = await superheroPowerInfo.findOne({hero_names: superhero.name}).select('-_id -__v')
-            console.log(superhero.name)
 
+            // Temp array to store powers that are true
             truePowers = {
                 hero_name: superhero.name
             }
 
+            // Search for true powers and populate the array with them
             if (superheroPower){
-                //console.log(superheroPower)
                 for (p in superheroPower){
                     if (superheroPower[p] === 'True'){
                         truePowers[p] = true
                     }
                 }
-
                 res.send(truePowers)
             }
             else{
