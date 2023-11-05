@@ -1,5 +1,38 @@
+document.getElementById('addSuperhero').addEventListener('click', addListOfHeros)
+
+function addListOfHeros(){
+    const tableName = document.getElementById('tableName').value
+    const superheroIds = document.getElementById('idList').value.split(',').map(Number);
+
+    // console.log('Table name is: ', tableName)
+    // console.log('List of IDs: ', listOfIDs)
+
+    fetch(`/api/superheroes/${tableName}`, {
+        method: 'PUT', 
+        headers: {'Content-Type' : 'application/json'},
+        body: JSON.stringify(superheroIds)
+    })
+    .then((res => {
+        if (res.ok){
+            res.json()
+            .then((data) => {
+                console.log(data)
+            })
+            .catch(err => console.log('Failed to get json object'))
+        }
+        else{
+            console.log('Error: ', res.status)
+        }
+    }))
+    .catch()
+}
+
+
+/*-------------------------------------------------------------------------------------------------------------------------------------
 document.getElementById('get-inventory').addEventListener('click', getInventory)
 document.getElementById('addItem').addEventListener('click', addInventory)
+
+
 
 function getInventory(){
     fetch("/api/parts")
@@ -53,3 +86,5 @@ function addInventory(){
     })
     .catch()
 }
+
+*/
