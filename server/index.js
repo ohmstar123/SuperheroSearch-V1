@@ -426,6 +426,7 @@ app.use((req, res, next) => { // For all routes
 infoRouter.use(express.json())
 
 infoRouter.route('/:tableName/getAll')
+    // Get a list of all the information by a given list
     .get (async (req, res) => {
         
             const tableName = req.params.tableName;
@@ -455,43 +456,6 @@ infoRouter.route('/:tableName/getAll')
         
     })
 
-//     //Get the list of superhero IDs for a given list
-//     .get(async(req, res) => {
-//         tableName = req.params.tableName
-//         newHeroInfo = mongoose.model(tableName, newHeroData, tableName)
-//         const allIds = await newHeroInfo.find({}).select('-_id -__v')
-        
-//         const newList = []
-
-//         for (const superhero of allIds) {
-//             console.log(Object.keys(superhero).length)
-//             const powers = {}
-//             for (let index in superhero){
-//                 console.log(superhero[index])
-//                 if (superhero[index] !== 'False'){ 
-//                     powers[index] = superhero[index]
-//                 }
-//             }
-
-//             newList.push(powers)
-//         }
-
-
-//         try{
-//             if (allIds){
-//                 res.send(newList)
-//             }
-//             else{
-//                 res.status(404).send('table contains no results')
-//             }
-//         }
-//         catch (error){
-//             console.error(error);
-//             res.status(500).send('Internal Server Error');
-//         }
-//     })
-
-
 infoRouter.route('/') // Chain all the routes to the base prefix (/api/superheroes)
     // Get info on all the superheroes
     .get(async (req, res) => {
@@ -500,7 +464,7 @@ infoRouter.route('/') // Chain all the routes to the base prefix (/api/superhero
     })
 
 infoRouter.route('/allTables')
-
+    // Get all the super
     .get(async (req, res) => {
         try{
             const collections = await mongoose.connection.db.listCollections().toArray();
@@ -1040,7 +1004,7 @@ infoRouter.route('/pattern/:filter/:pattern/:n')
         }
     })
 
-infoRouter.route('/:id') 
+infoRouter.route('/id/:id') 
     // Get info on a superhero based on their ID
     .get(async (req, res) => {
         try{
@@ -1060,7 +1024,7 @@ infoRouter.route('/:id')
     })
 
 
-infoRouter.route('/:id/powers')
+infoRouter.route('/id/:id/powers')
     // Get the powers of the superhero based on their ID
     .get(async (req, res) => {
         try{
@@ -1085,6 +1049,30 @@ infoRouter.route('/:id/powers')
             else{
                 res.status(404).send(`Superhero powers with ID: ${req.params.id} was not found!`)
             }
+        }
+        catch (error){
+            console.error(error);
+            res.status(500).send('Internal Server Error');
+        }
+    })
+
+infoRouter.route('/name/:name')
+    // Get superhero information based on name (partial search)
+    .get(async (req, res) => {
+        try{
+            const heroName = decodeURIComponent(req.params.name)
+
+            const searchRegex = new RegExp('^' + heroName, 'i')
+
+            const superhero = await superheroInfo.find({name: searchRegex}).select('-_id -__v')
+
+            if (superhero){
+                res.json(superhero)
+            }
+            else{
+                res.status(404).send('No hero exists')
+            }
+
         }
         catch (error){
             console.error(error);

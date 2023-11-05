@@ -24,3 +24,11 @@
     padding: 5px;
     margin: 5px;
 }
+
+.searchByName{
+    background-color: rgb(210, 140, 244);
+    border-radius: 10px;
+    border: 2px solid purple;
+    padding: 5px;
+    margin: 5px;
+}

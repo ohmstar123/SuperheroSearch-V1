@@ -1,7 +1,63 @@
 document.getElementById('addSuperhero').addEventListener('click', addListOfHeros)
+document.getElementById('refreshBtn').addEventListener('click', refresh)
+document.getElementById('nameBtn').addEventListener('click', getName)
+refresh()
+
+function refresh(){
+    fetch('/api/superheroes/allTables')
+    .then(res => res.json())
+    .then(data => {
+        
+        const dropDown = document.getElementById('tableDropDown')
+        deletedValue1 = 'superheroinformations'
+        deleteValue2 = 'superheropowers'
+
+        newArray = data
+        newArray = newArray.filter((table) => table !== 'superheroinformations')
+        newArray = newArray.filter((table) => table !== 'superheropowers')
+
+        while(dropDown.options.length > 0){
+            dropDown.remove(0)
+        }
+
+        for (index in newArray){
+            const newOption = document.createElement('option')
+            newOption.value = newArray[index]
+            newOption.textContent = newArray[index]
+            dropDown.appendChild(newOption)
+        }
+    })
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+    });
+}
+
+function getName(){
+    searchValue = document.getElementById('nameInput').value
+
+    fetch(`/api/superheroes/name/${searchValue}`)
+    .then(res => res.json())
+    .then(data => {
+        
+
+        //console.log(data)
+        const results = document.getElementById('results')
+        while(results.firstChild){
+            results.removeChild(results.firstChild)
+        }
+
+        const preElement = document.createElement('pre')
+        preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+        results.appendChild(preElement)
+
+    })
+    .catch((error) => {
+        console.error('Error fetching data:', error);
+    });
+}
 
 function addListOfHeros(){
-    const tableName = document.getElementById('tableName').value
+    const tableName = document.getElementById('tableDropDown').value
     const superheroIds = document.getElementById('idList').value.split(',').map(Number);
 
     // console.log('Table name is: ', tableName)

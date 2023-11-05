@@ -13,14 +13,22 @@
     <h1>SE 3316 Lab 3</h1>
     <h2>Superhero Information</h2>
     <p>Hello World!</p>
-    <input type="text" placeholder="Enter ID number">
+    <button id="refreshBtn">Refresh</button>
    
+</div>
+    
+<div class="searchByName">
+    <h2>Search for Data</h2>
+    <span>
+        Search By Name: <input type="text" id="nameInput">
+        <button id="nameBtn">Submit</button>
+    </span>
 </div>
 
 <div class="admin">
     <h2>Insert List in Table</h2>
     <span>
-        Table Name: <input type="text" id="tableName">
+        Table Name: <select id="tableDropDown"></select>
         List of IDs: <input type="text" id="idList">
         <button id="addSuperhero">Add</button>
     </span>
@@ -29,10 +37,12 @@
 
 <div class="intro">
     <h2>
-        Our Inventory 
+        Display
         <button id="get-inventory">Reload</button>
     </h2>
-    <ol id="inventory"></ol>
+    <div id="results">
+        
+    </div>
 </div>
 
 <!-- Embedded JavaScript go here -->
