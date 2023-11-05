@@ -1,6 +1,9 @@
 document.getElementById('addSuperhero').addEventListener('click', addListOfHeros)
 document.getElementById('refreshBtn').addEventListener('click', refresh)
-document.getElementById('nameBtn').addEventListener('click', getName)
+document.getElementById('searchDataBtn').addEventListener('click', getSearchCriteria)
+document.getElementById('newListBtn').addEventListener('click', createNewList)
+document.getElementById('displayListBtn').addEventListener('click', displayList)
+document.getElementById('deleteListBtn').addEventListener('click', deleteList)
 refresh()
 
 function refresh(){
@@ -26,34 +29,125 @@ function refresh(){
             newOption.textContent = newArray[index]
             dropDown.appendChild(newOption)
         }
+
+        // Remove current display message
+        const results = document.getElementById('results')
+        while(results.firstChild){
+            results.removeChild(results.firstChild)
+        }
     })
     .catch((error) => {
         console.error('Error fetching data:', error);
     });
 }
 
-function getName(){
-    searchValue = document.getElementById('nameInput').value
+function getSearchCriteria(){
+    dropDown = document.getElementById('criteraDropDown').value
+    searchValue = document.getElementById('searchValue').value
+    numberOfSearchesValue = document.getElementById('numberInput').value
 
-    fetch(`/api/superheroes/name/${searchValue}`)
-    .then(res => res.json())
-    .then(data => {
-        
-
-        //console.log(data)
+    if ((searchValue === '' || numberOfSearchesValue === '') && dropDown !== 'Publisher'){
         const results = document.getElementById('results')
         while(results.firstChild){
             results.removeChild(results.firstChild)
         }
 
         const preElement = document.createElement('pre')
-        preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+        preElement.appendChild(document.createTextNode("No search value entered"))
         results.appendChild(preElement)
+    }
+    else if ((searchValue === '' || numberOfSearchesValue === '') && dropDown === 'Publisher'){
+        fetch('/api/superheroes/publishers')
+        .then(res => res.json())
+        .then(data => {
+            const results = document.getElementById('results')
+            while(results.firstChild){
+                results.removeChild(results.firstChild)
+            }
 
+            const preElement = document.createElement('pre')
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+            results.appendChild(preElement)
+        })
+    }
+    else{
+        if (dropDown === 'name' || dropDown === 'Race' || dropDown === 'Publisher'){
+            fetch(`/api/superheroes/pattern/${dropDown}/${searchValue}/${numberOfSearchesValue}`)
+            .then(res => res.json())
+            .then(data => {
+                const results = document.getElementById('results')
+                while(results.firstChild){
+                    results.removeChild(results.firstChild)
+                }
+    
+                const preElement = document.createElement('pre')
+                
+                if (data.length === 0){
+                    preElement.appendChild(document.createTextNode("No results found"))
+                }
+                else{
+                    preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+                }
+    
+                results.appendChild(preElement)
+            })
+        }
+        else{
+            //SEARCH BY POWER CODE GOES HERE
+        }
+    }
+    
+
+    /*
+    searchValue = document.getElementById('nameInput').value
+
+    fetch(`/api/superheroes/name/${searchValue}`)
+    .then(res => res.json())
+    .then(data => {
+        const results = document.getElementById('results')
+        while(results.firstChild){
+            results.removeChild(results.firstChild)
+        }
+
+        const preElement = document.createElement('pre')
+        
+        if (data.length === 0){
+            preElement.appendChild(document.createTextNode("No results found"))
+        }
+        else{
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+        }
+
+        results.appendChild(preElement)
     })
     .catch((error) => {
         console.error('Error fetching data:', error);
     });
+    */
+}
+
+function createNewList(){
+    const newName = document.getElementById('newListNameInput').value
+
+    fetch(`/api/superheroes/${newName}`, {
+        method: 'POST', 
+        headers: {'Content-Type' : 'application/json'},
+    })
+    .then((res => {
+        if (res.ok){
+            res.text()
+            .then(data => {
+                const results = document.getElementById('results')
+                while(results.firstChild){
+                    results.removeChild(results.firstChild)
+                }
+                const preElement = document.createElement('pre')
+                preElement.appendChild(document.createTextNode(data))
+                results.appendChild(preElement)
+
+            })
+        }
+    }))
 }
 
 function addListOfHeros(){
@@ -70,9 +164,15 @@ function addListOfHeros(){
     })
     .then((res => {
         if (res.ok){
-            res.json()
+            res.text()
             .then((data) => {
-                console.log(data)
+                const results = document.getElementById('results')
+                while(results.firstChild){
+                    results.removeChild(results.firstChild)
+                }
+                const preElement = document.createElement('pre')
+                preElement.appendChild(document.createTextNode(data))
+                results.appendChild(preElement)
             })
             .catch(err => console.log('Failed to get json object'))
         }
@@ -83,6 +183,52 @@ function addListOfHeros(){
     .catch()
 }
 
+function displayList(){
+    const tableName = document.getElementById('tableDropDown').value
+
+    fetch(`/api/superheroes/${tableName}/getAll`)
+    .then(res => res.json())
+    .then(data => {
+        const results = document.getElementById('results')
+        while(results.firstChild){
+            results.removeChild(results.firstChild)
+        }
+
+        const preElement = document.createElement('pre')
+        
+        if (data.length === 0){
+            preElement.appendChild(document.createTextNode("No results found"))
+        }
+        else{
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
+        }
+
+        results.appendChild(preElement)
+    })
+}
+
+function deleteList(){
+    const tableName = document.getElementById('tableDropDown').value
+
+    fetch(`/api/superheroes/${tableName}/delete`, {
+        method: 'DELETE', 
+        headers: {'Content-Type' : 'application/json'},
+    })
+    .then((res => {
+        if (res.ok){
+            res.text()
+            .then(data => {
+                const results = document.getElementById('results')
+                while(results.firstChild){
+                    results.removeChild(results.firstChild)
+                }
+                const preElement = document.createElement('pre')
+                preElement.appendChild(document.createTextNode(data))
+                results.appendChild(preElement)
+            })
+        }
+    }))
+}
 
 /*-------------------------------------------------------------------------------------------------------------------------------------
 document.getElementById('get-inventory').addEventListener('click', getInventory)

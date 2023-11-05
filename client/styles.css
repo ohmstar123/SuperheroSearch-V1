@@ -1,4 +1,4 @@
-.intro{
+.display{
     margin: 5px;
     padding: 5px;
     border: 2px solid purple;
@@ -6,19 +6,35 @@
     background-color:rgb(235, 233, 127);
 }
 
-.intro button{
+.display button{
     border-radius: 10px;
     border: 2px solid crimson;
     background-color: aquamarine;
     transition-duration: 0.4s;
 }
 
-.intro button:hover{
+.display button:hover{
     background-color: wheat;
 }
 
-.admin{
+.createTable{
+    background-color: rgb(137, 243, 171);
+    border-radius: 10px;
+    border: 2px solid purple;
+    padding: 5px;
+    margin: 5px;
+}
+
+.dataInsertion{
     background-color: paleturquoise;
+    border-radius: 10px;
+    border: 2px solid purple;
+    padding: 5px;
+    margin: 5px;
+}
+
+.showTable{
+    background-color: rgb(237, 206, 126);
     border-radius: 10px;
     border: 2px solid purple;
     padding: 5px;

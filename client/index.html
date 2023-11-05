@@ -20,22 +20,48 @@
 <div class="searchByName">
     <h2>Search for Data</h2>
     <span>
-        Search By Name: <input type="text" id="nameInput">
-        <button id="nameBtn">Submit</button>
+        Criteria: 
+        <select id="criteraDropDown">
+            <option value="name">name</option>
+            <option value="Race">Race</option>
+            <option value="Publisher">Publisher</option>
+            <option value="Powers">Power</option>
+        </select>
+        Search Value: <input type="text" id="searchValue">
+        Number of Searches: <input type="text" id="numberInput">
+        <button id="searchDataBtn">Submit</button>    
     </span>
 </div>
 
-<div class="admin">
-    <h2>Insert List in Table</h2>
+<div class="createTable">
+    <h2>Create a List</h2>
+    <span>
+        Name of New List: <input type="text" id="newListNameInput">
+        <button id="newListBtn">Submit</button>
+    </span>
+</div>
+
+<div class="dataInsertion">
+    <h2>Insert Data in Table</h2>
     <span>
         Table Name: <select id="tableDropDown"></select>
         List of IDs: <input type="text" id="idList">
         <button id="addSuperhero">Add</button>
+        <button id="displayListBtn">Show List</button>
+        <button id="deleteListBtn">Delete List</button>
     </span>
     <span id="status"></span>
 </div>
 
-<div class="intro">
+<div class="showTable">
+    <h2>Display the List</h2>
+    <span>
+        Table Name: <select id="tableDropDown"></select>
+    </span>
+    <span id="status"></span>
+</div>
+
+<div class="display">
     <h2>
         Display
         <button id="get-inventory">Reload</button>
