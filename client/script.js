@@ -356,33 +356,55 @@ function sortList(){
         }
         else if (selectedOption === "Powers") {
             //POWER SORT
-            // data.sort((a, b) => {
-            //     const valueA = Object.values(a).filter(value => value === true).length
-            //     const valueB = Object.values(b).filter(value => value === true).length
-            //     return valueB - valueA;
-                
-            // })
+            const temp = []
+            const sorted = []
+            const sortedData = []
+            let counter = 0
 
-            data.sort((a, b) => countTrueProperties(b) - countTrueProperties(a))
+            data.forEach(hero => {
+                allValues = Object.values(hero)
+                for (let i = 0; i < allValues.length; i++){
+                    
+                    if (allValues[i] === 'True'){
+                        counter++
+                    }
+                }
+                temp.push(counter)
+                counter = 0
+            });
             
-
+            while (temp.length > 0) {
+                let max = temp[0];
+                let dataMax = data[0]
+                let maxIndex = 0;
+            
+                for (let i = 1; i < temp.length; i++) {
+                    if (temp[i] > max) {
+                        max = temp[i];
+                        dataMax = data[i]
+                        maxIndex = i;
+                    }
+                }
+            
+                sorted.push(max);
+                sortedData.push(dataMax)
+                temp.splice(maxIndex, 1);
+                data.splice(maxIndex, 1)
+            }
 
             const results = document.getElementById('results')
             while(results.firstChild){
                 results.removeChild(results.firstChild)
             }
             const preElement = document.createElement('pre')
-            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+            preElement.appendChild(document.createTextNode(JSON.stringify(sortedData, null, 2)));
             results.appendChild(preElement);
         }
     })
-
-    
-    
 }
 
 function countTrueProperties(obj) {
-    return Object.values(obj).filter(value => value === true).length;
+    return Object.values(obj).filter(value => value === 'True');
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------
