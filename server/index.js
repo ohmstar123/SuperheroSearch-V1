@@ -458,10 +458,8 @@ infoRouter.route('/:tableName/getAll')
             const newList = [];
     
             for (const superhero of allIds) {
-                console.log(superhero)
                 const superHeroPowers = {};
                 for (const index in superhero) {
-                    console.log(superhero[index])
                     if (superhero[index] !== "False") {
                         superHeroPowers[index] = superhero[index];
                     }
@@ -994,13 +992,13 @@ infoRouter.route('/pattern/:filter/:pattern/:n')
                 res.send(searchCondition)
             }
             else{
-                res.send(`No results found`)
+                res.send(({error: 'No results found'}))
                 //res.status(404).send(`Superhero with ID: ${filterValue} was not found!`)
             }
         }
         catch (error){
             console.error(error);
-            res.status(500).send('Internal Server Error');
+            //res.status(500).send(('Internal Server Error').json());
         }
     })
 
@@ -1034,7 +1032,17 @@ infoRouter.route('/id/:id/powers')
 
             // Temp array to store powers that are true
             truePowers = {
-                hero_name: superhero.name
+                id: superhero.id,
+                name: superhero.name,
+                Gender: superhero.Gender,
+                'Eye color': superhero['Eye color'],
+                Race: superhero.Race,
+                'Hair color': superhero['Hair color'],
+                Height: superhero.Height,
+                Publisher: superhero.Publisher,
+                'Skin color': superhero['Skin color'],
+                Alignment: superhero.Alignment,
+                Weight: superhero.Weight
             }
 
             // Search for true powers and populate the array with them
@@ -1047,7 +1055,9 @@ infoRouter.route('/id/:id/powers')
                 res.send(truePowers)
             }
             else{
-                res.status(404).send(`Superhero powers with ID: ${req.params.id} was not found!`)
+                res.send(truePowers)
+                //res.send('No results')
+                //res.status(404).send(`Superhero powers with ID: ${req.params.id} was not found!`)
             }
         }
         catch (error){
@@ -1056,29 +1066,29 @@ infoRouter.route('/id/:id/powers')
         }
     })
 
-infoRouter.route('/name/:name')
-    // Get superhero information based on name (partial search)
-    .get(async (req, res) => {
-        try{
-            const heroName = decodeURIComponent(req.params.name)
+// infoRouter.route('/name/:name')
+//     // Get superhero information based on name (partial search)
+//     .get(async (req, res) => {
+//         try{
+//             const heroName = decodeURIComponent(req.params.name)
 
-            const searchRegex = new RegExp('^' + heroName, 'i')
+//             const searchRegex = new RegExp('^' + heroName, 'i')
 
-            const superhero = await superheroInfo.find({name: searchRegex}).select('-_id -__v')
+//             const superhero = await superheroInfo.find({name: searchRegex}).select('-_id -__v')
 
-            if (superhero){
-                res.json(superhero)
-            }
-            else{
-                res.status(404).send('No hero exists')
-            }
+//             if (superhero){
+//                 res.json(superhero)
+//             }
+//             else{
+//                 res.status(404).send('No hero exists')
+//             }
 
-        }
-        catch (error){
-            console.error(error);
-            res.status(500).send('Internal Server Error');
-        }
-    })
+//         }
+//         catch (error){
+//             console.error(error);
+//             res.status(500).send('Internal Server Error');
+//         }
+//     })
 
 
 // Determine the base prefix for the router

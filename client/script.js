@@ -4,6 +4,7 @@ document.getElementById('searchDataBtn').addEventListener('click', getSearchCrit
 document.getElementById('newListBtn').addEventListener('click', createNewList)
 document.getElementById('displayListBtn').addEventListener('click', displayList)
 document.getElementById('deleteListBtn').addEventListener('click', deleteList)
+document.getElementById('sortDropDown').addEventListener('change', sortList)
 refresh()
 
 function refresh(){
@@ -46,7 +47,7 @@ function getSearchCriteria(){
     searchValue = document.getElementById('searchValue').value
     numberOfSearchesValue = document.getElementById('numberInput').value
 
-    if ((searchValue === '' || numberOfSearchesValue === '') && dropDown !== 'Publisher'){
+    if ((searchValue === '' || numberOfSearchesValue === '') && dropDown !== 'Publisher' && dropDown !== 'Powers'){
         const results = document.getElementById('results')
         while(results.firstChild){
             results.removeChild(results.firstChild)
@@ -56,7 +57,7 @@ function getSearchCriteria(){
         preElement.appendChild(document.createTextNode("No search value entered"))
         results.appendChild(preElement)
     }
-    else if ((searchValue === '' || numberOfSearchesValue === '') && dropDown === 'Publisher'){
+    else if ((searchValue === '' || numberOfSearchesValue === '') && dropDown === 'Publisher' && dropDown !== 'Powers'){
         fetch('/api/superheroes/publishers')
         .then(res => res.json())
         .then(data => {
@@ -75,61 +76,120 @@ function getSearchCriteria(){
             fetch(`/api/superheroes/pattern/${dropDown}/${searchValue}/${numberOfSearchesValue}`)
             .then(res => res.json())
             .then(data => {
-                const results = document.getElementById('results')
-                while(results.firstChild){
-                    results.removeChild(results.firstChild)
-                }
+                try{
+                    const results = document.getElementById('results')
+                    while(results.firstChild){
+                        results.removeChild(results.firstChild)
+                    }
+        
+                    const preElement = document.createElement('pre')
     
-                const preElement = document.createElement('pre')
-                
-                if (data.length === 0){
-                    preElement.appendChild(document.createTextNode("No results found"))
-                }
-                else{
-                    preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
-                }
+                    tempArray = []
+                    if (data === 'No results' || data.length === 0){
+                        preElement.appendChild(document.createTextNode("No results"))
+                    }
+                    else{
+                        var fetchPromises = data.map(item => {
+                            return fetch(`/api/superheroes/id/${item.id}/powers`)
+                              .then(res => res.json())
+                              .then(powersData => {
+                                tempArray.push(powersData)
+                              });
+                        });
     
-                results.appendChild(preElement)
+                        Promise.all(fetchPromises)
+                        .then(() => {
+                            preElement.appendChild(document.createTextNode(JSON.stringify(tempArray, null, 2)))
+                            results.appendChild(preElement)
+                        });
+                    }
+                }
+                catch(e){
+                    const results = document.getElementById('results')
+                    while(results.firstChild){
+                        results.removeChild(results.firstChild)
+                    }
+                    const preElement = document.createElement('pre')
+                    preElement.appendChild(document.createTextNode("No results"))
+                    results.appendChild(preElement);
+                }
             })
         }
-        else{
+        else if (dropDown === 'Powers'){
             //SEARCH BY POWER CODE GOES HERE
+            const nameArray = []
+            const idArray = []
+            const heros = []
+            
+            fetch('/api/superheroes/superheropowers/getAll')
+            .then(res => res.json())
+            .then(data => {
+                
+                for (let i = 0; i < data.length; i++){
+                    if (data[i].hasOwnProperty(searchValue)){
+                        nameArray.push(data[i].hero_names)
+                    }
+                }
+                
+                if (nameArray.length > 0){
+                    fetch('/api/superheroes/superheroinformations/getAll')
+                    .then(res => res.json())
+                    .then(data => {
+                        
+                        //console.log(nameArray[1])
+                        //console.log(data[3].name)
+                        const fetchPromises = [];
+                        for (let j = 0; j < nameArray.length; j++){
+                        
+                            for (let i = 0; i < data.length; i++){
+                                
+                                if (nameArray[j] === data[i].name){
+                                    idArray.push(data[i].id)
+                                    break
+                                }
+                            }
+                        }
+                        //console.log(idArray)
+                        // for (let i = 0; i < idArray.length; i++){
+                        //     fetch(`api/superheroes/id/${idArray[i]}/powers`)
+                        //     .then(res => res.json())
+                        //     .then (data => {
+                        //         heros.push(data)
+                        //     })
+                        // }
+                        // console.log(heros)
+
+                        for (let i = 0; i < idArray.length; i++) {
+                            fetchPromises.push(
+                              fetch(`/api/superheroes/id/${idArray[i]}/powers`)
+                                .then(res => res.json())
+                            )
+                        }
+
+                        Promise.all(fetchPromises)
+                        .then(dataArray => {
+                            heros.push(...dataArray);
+                            const results = document.getElementById('results')
+                            while(results.firstChild){
+                                results.removeChild(results.firstChild)
+                            }
+                            const preElement = document.createElement('pre')
+                            preElement.appendChild(document.createTextNode(JSON.stringify(heros, null, 2)));
+                            results.appendChild(preElement);
+                        })
+                    })
+                    
+                }
+            })
         }
     }
-    
-
-    /*
-    searchValue = document.getElementById('nameInput').value
-
-    fetch(`/api/superheroes/name/${searchValue}`)
-    .then(res => res.json())
-    .then(data => {
-        const results = document.getElementById('results')
-        while(results.firstChild){
-            results.removeChild(results.firstChild)
-        }
-
-        const preElement = document.createElement('pre')
-        
-        if (data.length === 0){
-            preElement.appendChild(document.createTextNode("No results found"))
-        }
-        else{
-            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)))
-        }
-
-        results.appendChild(preElement)
-    })
-    .catch((error) => {
-        console.error('Error fetching data:', error);
-    });
-    */
 }
 
 function createNewList(){
     const newName = document.getElementById('newListNameInput').value
+    const encodedNewNameInput = encodeURIComponent(newName);
 
-    fetch(`/api/superheroes/${newName}`, {
+    fetch(`/api/superheroes/${encodedNewNameInput}`, {
         method: 'POST', 
         headers: {'Content-Type' : 'application/json'},
     })
@@ -194,7 +254,7 @@ function displayList(){
             results.removeChild(results.firstChild)
         }
 
-        const preElement = document.createElement('pre')
+        preElement = document.createElement('pre')
         
         if (data.length === 0){
             preElement.appendChild(document.createTextNode("No results found"))
@@ -228,6 +288,101 @@ function deleteList(){
             })
         }
     }))
+}
+
+function sortList(){
+    const tableName = document.getElementById('tableDropDown').value
+    const selectedOption = document.getElementById('sortDropDown').value
+    fetch(`/api/superheroes/${tableName}/getAll`)
+    .then(res => res.json())
+    .then(data => {
+        if (selectedOption === "name") {
+            //NAME SORT
+            data.sort((a, b) => {
+                const valueA = a['name'].toLowerCase();
+                const valueB = b['name'].toLowerCase();
+
+                if (valueA < valueB) return -1;
+                if (valueA > valueB) return 1;
+                return 0;
+            })
+
+            const results = document.getElementById('results')
+            while(results.firstChild){
+                results.removeChild(results.firstChild)
+            }
+            const preElement = document.createElement('pre')
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+            results.appendChild(preElement);
+
+        } 
+        else if (selectedOption === "Race") {
+            //RACE SORT
+            data.sort((a, b) => {
+                const valueA = a['Race'].toLowerCase();
+                const valueB = b['Race'].toLowerCase();
+
+                if (valueA < valueB) return -1;
+                if (valueA > valueB) return 1;
+                return 0;
+            })
+
+            const results = document.getElementById('results')
+            while(results.firstChild){
+                results.removeChild(results.firstChild)
+            }
+            const preElement = document.createElement('pre')
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+            results.appendChild(preElement);
+        } 
+        else if (selectedOption === "Publisher") {
+            //PUBLISHER SORT
+            data.sort((a, b) => {
+                const valueA = a['Publisher'].toLowerCase();
+                const valueB = b['Publisher'].toLowerCase();
+
+                if (valueA < valueB) return -1;
+                if (valueA > valueB) return 1;
+                return 0;
+            })
+
+            const results = document.getElementById('results')
+            while(results.firstChild){
+                results.removeChild(results.firstChild)
+            }
+            const preElement = document.createElement('pre')
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+            results.appendChild(preElement);
+        }
+        else if (selectedOption === "Powers") {
+            //POWER SORT
+            // data.sort((a, b) => {
+            //     const valueA = Object.values(a).filter(value => value === true).length
+            //     const valueB = Object.values(b).filter(value => value === true).length
+            //     return valueB - valueA;
+                
+            // })
+
+            data.sort((a, b) => countTrueProperties(b) - countTrueProperties(a))
+            
+
+
+            const results = document.getElementById('results')
+            while(results.firstChild){
+                results.removeChild(results.firstChild)
+            }
+            const preElement = document.createElement('pre')
+            preElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+            results.appendChild(preElement);
+        }
+    })
+
+    
+    
+}
+
+function countTrueProperties(obj) {
+    return Object.values(obj).filter(value => value === true).length;
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------
