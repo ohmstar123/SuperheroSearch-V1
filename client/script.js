@@ -1,3 +1,4 @@
+// Eventlisters for buttons and dropdown menus
 document.getElementById('addSuperhero').addEventListener('click', addListOfHeros)
 document.getElementById('refreshBtn').addEventListener('click', refresh)
 document.getElementById('searchDataBtn').addEventListener('click', getSearchCriteria)
@@ -5,8 +6,11 @@ document.getElementById('newListBtn').addEventListener('click', createNewList)
 document.getElementById('displayListBtn').addEventListener('click', displayList)
 document.getElementById('deleteListBtn').addEventListener('click', deleteList)
 document.getElementById('sortDropDown').addEventListener('change', sortList)
+
+// Calling the refresh function when the server starts to update the drop down menu for list names and clear the display
 refresh()
 
+// Function to update the table list after someone adds a list with a new name. Also clears the display
 function refresh(){
     fetch('/api/superheroes/allTables')
     .then(res => res.json())
@@ -23,7 +27,8 @@ function refresh(){
         while(dropDown.options.length > 0){
             dropDown.remove(0)
         }
-
+        
+        // Add the new options to the drop down menu
         for (index in newArray){
             const newOption = document.createElement('option')
             newOption.value = newArray[index]
@@ -42,6 +47,7 @@ function refresh(){
     });
 }
 
+// Function to search by either power, name, publisher, or race, and give a specific range on how many search results are wanted
 function getSearchCriteria(){
     dropDown = document.getElementById('criteraDropDown').value
     searchValue = document.getElementById('searchValue').value
@@ -185,6 +191,7 @@ function getSearchCriteria(){
     }
 }
 
+// Function to create a list with a new name 
 function createNewList(){
     const newName = document.getElementById('newListNameInput').value
     const encodedNewNameInput = encodeURIComponent(newName);
@@ -210,6 +217,7 @@ function createNewList(){
     }))
 }
 
+// Function to add heros by id to a given list
 function addListOfHeros(){
     const tableName = document.getElementById('tableDropDown').value
     const superheroIds = document.getElementById('idList').value.split(',').map(Number);
@@ -243,6 +251,7 @@ function addListOfHeros(){
     .catch()
 }
 
+// Function to display any given list to the screen
 function displayList(){
     const tableName = document.getElementById('tableDropDown').value
 
@@ -267,6 +276,7 @@ function displayList(){
     })
 }
 
+// Function to delete any given list 
 function deleteList(){
     const tableName = document.getElementById('tableDropDown').value
 
@@ -289,7 +299,7 @@ function deleteList(){
         }
     }))
 }
-
+// Function to sort a given list by name, race, publisher, or power
 function sortList(){
     const tableName = document.getElementById('tableDropDown').value
     const selectedOption = document.getElementById('sortDropDown').value
@@ -403,67 +413,5 @@ function sortList(){
     })
 }
 
-function countTrueProperties(obj) {
-    return Object.values(obj).filter(value => value === 'True');
-}
-
-/*-------------------------------------------------------------------------------------------------------------------------------------
-document.getElementById('get-inventory').addEventListener('click', getInventory)
-document.getElementById('addItem').addEventListener('click', addInventory)
 
 
-
-function getInventory(){
-    fetch("/api/parts")
-    .then(res => res.json())
-    .then(data => {
-        console.log(data)
-        const list = document.getElementById('inventory')
-
-        // Clear the list
-        while(list.hasChildNodes()){
-            list.removeChild(list.firstChild)
-        }
-
-        // Add each item to the list
-        data.forEach(e => {
-            const item = document.createElement('li')
-            item.appendChild(document.createTextNode(`${e.name} (${e.colour}) Qty: ${e.stock}`))
-            list.appendChild(item)
-        });
-    })
-    
-}
-
-function addInventory(){
-    const newpart = {
-        name : document.getElementById('name').value, 
-        colour : document.getElementById('colour').value, 
-        stock : document.getElementById('stock').value 
-    }
-    console.log(newpart)
-
-    fetch('/api/parts', {
-        method: 'POST', 
-        headers: {'Content-type' : 'application/json'},
-        body: JSON.stringify(newpart)
-    })
-    .then(res => {
-        if (res.ok){
-            res.json()
-            .then(data => {
-                getInventory()
-                console.log(data)
-                document.getElementById('status').innerText = `Created part ${data.id}: ${data.name}`
-            })
-            .catch(err => console.log('Failed to get json object'))
-        }
-        else{
-            console.log('Error: ', res.status)
-            document.getElementById('status').textContent = 'Failed to add item'
-        }
-    })
-    .catch()
-}
-
-*/
