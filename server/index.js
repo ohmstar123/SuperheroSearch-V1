@@ -6,13 +6,19 @@ const fs = require('fs')
 const path = require('path')
 const mongoose = require('mongoose')
 
-
+// Connect to your MongoDB database located at 'mongodb://localhost:27017/superheroDB'
 mongoose.connect('mongodb://localhost:27017/superheroDB')
+
+// Get a reference to the database connection
 const db = mongoose.connection
+
+// Set up an event listener for any connection errors
 db.on('error', (error) => console.error(error))
+
+// Set up an event listener for when the connection is successfully opened
 db.once('open', () => console.log('Connected to Mongo Database'))
 
-
+// Schema for superheroInformation json file
 const superheroInfoSchema = new mongoose.Schema({
     "id":Number,
     "name":String,
@@ -29,6 +35,7 @@ const superheroInfoSchema = new mongoose.Schema({
 const superheroInfo = mongoose.model('superheroInformation', superheroInfoSchema)
 module.exports = superheroInfo
 
+// Schema for superheroPower json file
 const superheroPowerSchema= new mongoose.Schema({
     "hero_names": String,
     "Agility": String,
@@ -202,6 +209,7 @@ const superheroPowerSchema= new mongoose.Schema({
 const superheroPowerInfo = mongoose.model('superheroPowers', superheroPowerSchema)
 module.exports = superheroPowerInfo
 
+// Custom schema for creating a database that includes information from both superheroPower and superheroInformation
 const newHeroData = new mongoose.Schema({
     "id":Number,
     "name":String,
@@ -387,6 +395,7 @@ const newHeroData = new mongoose.Schema({
 const superheroData = JSON.parse(fs.readFileSync("../jsonFiles/superhero_info.json", 'utf-8'))
 const superheroPowers = JSON.parse(fs.readFileSync("../jsonFiles/superhero_powers.json", 'utf-8'))
 
+// Turn superheroInfo json file into a new table in MongoDB
 async function fileReaderInfo(file){
     try{
         for (const superH of superheroData){
@@ -399,6 +408,7 @@ async function fileReaderInfo(file){
     }
 }
 
+// Turn superheroPowers json file into a new table in MongoDB
 async function fileReaderPowers(file){
     try{
         for (const superH of superheroPowers){
@@ -428,14 +438,17 @@ infoRouter.route('/publishers')
     // Get all the publishers
     .get(async (req, res) => {
         try{
+            // Get all superhero information
             const allSuperheroes = await superheroInfo.find({}).select('-_id -__v')
             allPublishers = [] 
-    
+            
+            // Add all publishers from all the superhero info into an array
             for(let i = 0; i < allSuperheroes.length; i++){
                 allPublishers.push(allSuperheroes[i].Publisher)
                 
             }
 
+            // Filter out the array for any duplicates
             const uniquePublishers = [...new Set(allPublishers)]
             const filteredPublishers = uniquePublishers.filter((item) => item !== '')
             res.send(filteredPublishers)
@@ -449,13 +462,14 @@ infoRouter.route('/publishers')
 infoRouter.route('/:tableName/getAll')
     // Get a list of all the information by a given list
     .get (async (req, res) => {
-        
+            // Get all the superhero info
             const tableName = req.params.tableName;
             const newHeroInfo = mongoose.model(`${tableName}`, newHeroData, `${tableName}`);
             const allIds = await newHeroInfo.find({}).select("-_id -__v").lean();
     
             const newList = [];
-    
+
+            // Remove all superhero powers that are false and push the rest to an array
             for (const superhero of allIds) {
                 const superHeroPowers = {};
                 for (const index in superhero) {
@@ -469,6 +483,7 @@ infoRouter.route('/:tableName/getAll')
             if(!allIds){
                 return res.status(404).json({error:`No heroes in ${tableName} server`});
             }
+            //Send the new array of superhero info and true powers
             res.status(200).json(newList);
         
     
@@ -483,9 +498,10 @@ infoRouter.route('/') // Chain all the routes to the base prefix (/api/superhero
     })
 
 infoRouter.route('/allTables')
-    // Get all the super
+    // Get all table names inside of the database
     .get(async (req, res) => {
         try{
+            // Send all the table names located in the database
             const collections = await mongoose.connection.db.listCollections().toArray();
             const collectionNames = collections.map((c) => c.name);
             res.send(collectionNames)
@@ -499,6 +515,7 @@ infoRouter.route('/allTables')
     })
 
 infoRouter.route('/:tableName/delete')
+    // Delete a table with a given name
     .delete(async (req, res) => {
 
         const collections = await mongoose.connection.db.listCollections().toArray();
@@ -506,6 +523,7 @@ infoRouter.route('/:tableName/delete')
 
         tableName = req.params.tableName
         try{
+            // Drop the table with the name the user has sent
             if (collectionNames.includes(tableName)){
                 mongoose.connection.db.collection(tableName).drop()
                 res.send('table deleted')
@@ -549,6 +567,7 @@ infoRouter.route('/:tableName')
         
         try{
             if (!collectionNames.includes(tableName)){
+                // Create a new table with the name the user has sent
                 newHeroInfo = mongoose.model(tableName, newHeroData, tableName)
                 module.exports = newHeroInfo
                 res.send('New table created')
@@ -571,10 +590,12 @@ infoRouter.route('/:tableName')
 
         const newHeroInfo = mongoose.model(tableName, newHeroData, tableName)
 
+        // Delete any previous information stored in the table
         await db.collection(tableName).deleteMany({});
         try{
             superheroIds.forEach(async idValue => {
                 try{
+                    // Add each superhero via id
                     const superhero = await superheroInfo.findOne({id: idValue}).select('-_id -__v')
                     const powers = await superheroPowerInfo.findOne({hero_names: superhero.name}).select('-_id -__v -hero_names')
         
@@ -762,6 +783,7 @@ infoRouter.route('/:tableName')
                     newSuperData.save()
                 }
                 catch(e){
+                    // If superhero does not have any powers, give them all false powers and add the superhero
                     const superhero = await superheroInfo.findOne({id: idValue}).select('-_id -__v')
                     const powers = await superheroPowerInfo.findOne({hero_names: superhero.name}).select('-_id -__v -hero_names')
 
@@ -955,15 +977,7 @@ infoRouter.route('/:tableName')
             console.error(error);
             res.status(500).send('Internal Server Error');
         }
-
-        
-        
-
-        //const newSuperhero = await newHeroInfo.insertOne()
     })
-
-
-
 
 infoRouter.route('/pattern/:filter/:pattern/:n')
     // Get the search results for the specific pattern
@@ -977,24 +991,24 @@ infoRouter.route('/pattern/:filter/:pattern/:n')
                 _id: 0, // Exclude _id field
                 __v: 0 // Exclude v field
             };
+            // If user wants to search by name, race, or publisher
             const regexPattern = new RegExp(`^${patternValue}`, 'i');
             const searchCondition = await superheroInfo.aggregate([{$match: {[filterValue]: regexPattern}}, {$limit: parseInt(nValue)}, {$project: projection}])
             
             if (searchCondition.length !== 0){
                 res.send(searchCondition)
             }
+            // if user wants to search by height or weight
             else if (filterValue === 'Height' || filterValue === 'Weight'){
                 const searchCondition = await superheroInfo.aggregate([{$match: {[filterValue]: parseInt(regexPattern)}}, {$limit: parseInt(nValue)}, {$project: projection}])
                 res.send(searchCondition)
             }
             else{
                 res.send(({error: 'No results found'}))
-                //res.status(404).send(`Superhero with ID: ${filterValue} was not found!`)
             }
         }
         catch (error){
             console.error(error);
-            //res.status(500).send(('Internal Server Error').json());
         }
     })
 
@@ -1003,6 +1017,7 @@ infoRouter.route('/id/:id')
     .get(async (req, res) => {
         try{
             const idValue = req.params.id
+            // Get information on a superhero by id and send that information
             const superhero = await superheroInfo.find({id: idValue}).select('-_id -__v')
             if (superhero){
                 res.send(superhero)
@@ -1052,8 +1067,6 @@ infoRouter.route('/id/:id/powers')
             }
             else{
                 res.send(truePowers)
-                //res.send('No results')
-                //res.status(404).send(`Superhero powers with ID: ${req.params.id} was not found!`)
             }
         }
         catch (error){

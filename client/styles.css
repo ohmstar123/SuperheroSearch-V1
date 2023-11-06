@@ -6,14 +6,14 @@
     background-color:rgb(235, 233, 127);
 }
 
-.refreshBtn{
+#refreshBtn{
     border-radius: 10px;
     border: 2px solid crimson;
     background-color: aquamarine;
     transition-duration: 0.4s;
 }
 
-.refreshBtn:hover{
+#refreshBtn:hover{
     background-color: wheat;
 }
 
@@ -47,4 +47,6 @@
     border: 2px solid purple;
     padding: 5px;
     margin: 5px;
+    
 }
+
